@@ -1,0 +1,153 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function profilePath() {
+      return /databases/$(database)/documents/users/$(request.auth.uid);
+    }
+
+    function isActiveProfile(data) {
+      return data.active == true || data.active == "true" || data.status == "ativo";
+    }
+
+    function hasActiveProfile() {
+      return signedIn()
+        && exists(profilePath())
+        && isActiveProfile(get(profilePath()).data);
+    }
+
+    function myProfile() {
+      return get(profilePath()).data;
+    }
+
+    function isAdmin() {
+      return hasActiveProfile() && myProfile().role == "admin";
+    }
+
+    function isStaff() {
+      return hasActiveProfile()
+        && myProfile().role in ["funcionario", "gerente", "recepcao", "recepção"];
+    }
+
+    function canUseOperationalData() {
+      return isAdmin() || isStaff();
+    }
+
+    function companyId() {
+      return myProfile().adminUid != null ? myProfile().adminUid : request.auth.uid;
+    }
+
+    function ownsExistingCompanyData() {
+      return isAdmin()
+        || (
+          canUseOperationalData()
+          && resource.data.adminUid == companyId()
+        );
+    }
+
+    function ownsIncomingCompanyData() {
+      return isAdmin()
+        || (
+          canUseOperationalData()
+          && request.resource.data.adminUid == companyId()
+        );
+    }
+
+    function validPublicReservation() {
+      return request.auth == null
+        && request.resource.data.source == "site"
+        && request.resource.data.status == "pendente"
+        && request.resource.data.keys().hasOnly([
+          "guestName",
+          "phone",
+          "cpf",
+          "checkIn",
+          "checkOut",
+          "people",
+          "roomType",
+          "notes",
+          "source",
+          "status",
+          "createdAt"
+        ])
+        && request.resource.data.guestName is string
+        && request.resource.data.phone is string
+        && request.resource.data.checkIn is string
+        && request.resource.data.checkOut is string
+        && request.resource.data.people is int
+        && request.resource.data.roomType is string;
+    }
+
+    function validRole(role) {
+      return role in ["admin", "gerente", "funcionario", "recepcao", "recepção"];
+    }
+
+    match /users/{uid} {
+      allow get: if signedIn() && (uid == request.auth.uid || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isAdmin()
+        && request.resource.data.uid == uid
+        && isActiveProfile(request.resource.data)
+        && validRole(request.resource.data.role);
+      allow update: if isAdmin()
+        && request.resource.data.uid == resource.data.uid
+        && validRole(request.resource.data.role);
+      allow delete: if isAdmin();
+    }
+
+    match /rooms/{id} {
+      allow read: if ownsExistingCompanyData();
+      allow create: if isAdmin() || ownsIncomingCompanyData();
+      allow delete: if isAdmin();
+      allow update: if isAdmin()
+        || (
+          isStaff()
+          && ownsExistingCompanyData()
+          && ownsIncomingCompanyData()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status", "guest", "reservationId", "updatedBy", "adminUid", "ownerUid"])
+        );
+    }
+
+    match /guests/{id} {
+      allow read, update: if ownsExistingCompanyData();
+      allow create: if ownsIncomingCompanyData();
+      allow delete: if isAdmin();
+    }
+
+    match /reservations/{id} {
+      allow create: if ownsIncomingCompanyData() || validPublicReservation();
+
+      allow read, update: if ownsExistingCompanyData() || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /cash/{id} {
+      allow read, update: if ownsExistingCompanyData();
+      allow create: if ownsIncomingCompanyData();
+      allow delete: if isAdmin();
+    }
+
+    match /shifts/{id} {
+      allow read: if ownsExistingCompanyData();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /settings/{id} {
+      allow read, write: if isAdmin();
+    }
+
+    match /roomTypes/{id} {
+      allow read: if canUseOperationalData();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /auditLogs/{logId} {
+      allow create: if request.auth != null;
+      allow read: if isAdmin();
+      allow update, delete: if false;
+    }
+  }
+}

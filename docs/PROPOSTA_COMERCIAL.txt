@@ -1,0 +1,22 @@
+PROPOSTA COMERCIAL - Pousada ALTODACRUZ MANAGER
+
+Sistema de gestão para Pousada Alto Da Cruz.
+
+Entrega:
+- Sistema online com login por CPF
+- Painel administrativo
+- Controle de quartos
+- Cadastro de hóspedes
+- Reservas e check-in/check-out
+- Caixa financeiro
+- Relatórios
+- Equipe e escala
+- PDF de reserva
+- Botão WhatsApp
+- Instalação no computador e celular
+
+Sugestão de cobrança:
+- Instalação/configuração: R$ 800 a R$ 1.500
+- Manutenção mensal opcional: R$ 100 a R$ 300
+
+Custos de domínio, se houver, podem ser cobrados separadamente.

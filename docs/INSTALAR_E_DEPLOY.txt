@@ -1,0 +1,21 @@
+PADC MANAGER PREMIUM - PLUG AND PLAY
+
+1) Extraia o ZIP
+2) Abra a pasta no VS Code
+3) No terminal:
+
+npm install
+npm run build
+firebase deploy
+
+Link:
+https://padc-991e3.web.app
+
+Se quiser testar antes:
+npm run dev
+
+Atualização incluída:
+- Página Configurações com Informações da Conta
+- Informações da Pousada
+- Botão Sair da Conta
+- Botão Salvar Configurações
