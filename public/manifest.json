@@ -1,9 +1,0 @@
-{
-  "name": "Pousada Alto Cruz Manager",
-  "short_name": "Padc",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#f8fafc",
-  "theme_color": "#0f172a",
-  "icons": []
-}
