@@ -1,0 +1,33 @@
+﻿Pousada Alto da Cruz — Estrutura do Repositório
+
+Resumo rápido:
+- `site_pousadaaltodacruz/`: site público (HTML/CSS/JS para clientes)
+- `src/`: painel administrativo e código interno (admin.html, admin.js, firebase module)
+- `firebase.json`: configuração Firebase hosting e Firestore
+- `firestore.rules`: regras de segurança do Firestore
+- `firestore.indexes.json`: índices do Firestore
+- `wrangler.toml`: configuração Cloudflare Pages para assets estáticos
+- `backups/`: backups automáticos antes de refatorações
+
+Como funciona:
+- O frontend público está em `/site_pousadaaltodacruz`. Ele carrega `./styles.css` e `./script.js` (módulo ES). O código do Firebase permanece em `/src/firebase.js` e é importado por `site_pousadaaltodacruz/script.js` como `../src/firebase.js`.
+- O painel administrativo está em `/src/admin.html` e usa `/src/admin.js`. A autenticação e lógica de reservas permanecem inalteradas (módulos originais mantidos).
+- Os arquivos `admin.html`, `admin.js` e `firebase.js` foram removidos da raiz e agora estão centralizados em `/src`.
+
+Comandos úteis:
+- Instalação (se houver dependências): `npm install`
+- Build (mantido): `npm run build`
+
+Notas sobre deploy:
+- Repositório GitHub principal: `https://github.com/brbsuarez/alto-cruz-firebase`
+- Cloudflare Pages deve publicar o conteúdo da pasta `site_pousadaaltodacruz` como raiz do site.
+- O `wrangler.toml` foi adicionado para servir este diretório como assets estáticos.
+- Não use `npx wrangler deploy` ou `npx wrangler versions upload` para este deploy estático; estes comandos são errados para o fluxo atual.
+- Se o pipeline publicar a raiz do repositório, configure o diretório público como `/` e o build output como `site_pousadaaltodacruz`.
+
+Backup:
+- Antes de mover arquivos, versões de backup foram salvas em `/backups/backup-20260522-120000/`.
+- Os arquivos públicos antigos da raiz (`index.html`, `script.js`, `styles.css`, `favicon.png`) foram removidos depois da reorganização.
+
+Commit automático:
+- commit: "refactor: organizar estrutura profissional do projeto"
